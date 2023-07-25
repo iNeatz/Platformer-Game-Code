@@ -7,8 +7,8 @@
 using namespace std;
 
 bool isGameOver = false;
-string obstacleType[2] = {"Spike", "Torpedo"};
-string obsAnim = "finished";
+int obsX, noOfObs;
+string obsType[2] = {"Spike", "Torpedo"};
 
 class Player
 {
@@ -35,7 +35,7 @@ public:
         if(kbhit())
         {
             controlKey = getch();
-            if(controlKey = ' ')
+            if(controlKey == ' ')
                 jumpStatus = 'u';
         }
 
@@ -54,6 +54,14 @@ public:
             Player p(x,y);
         }
     }
+    int getX()
+    {
+        return x;
+    }
+    int getY()
+    {
+        return y;
+    }
 };
 
 class Ground
@@ -65,75 +73,82 @@ public:
     }
 };
 
-class Obstacle
+class Obstacle : public Player
 {
     string type;
 public:
     Obstacle()
     {
-        type = "Spike";
+        srand(time(0));
+        //randomize obstacle type
+        int p = rand()%2;
+        type = obsType[p];
+    }
+    void createObs(int x, int n)
+    {
+        if(type == "Spike")
+        {
+            for(int j=0; j<n; j++)
+            {
+                // Specify the coordinates of the triangle
+                int points[] = {x, 440, x+40, 440, x+20, 405, x, 440};
+
+                // Draw a filled triangle
+                fillpoly(4, points);
+
+                x+=40;
+
+
+            }
+        }
+        else if(type == "Torpedo")
+        {
+            bar(x, 350, x+20, 370);
+        }
+    }
+    void moveObs()
+    {
+        if(obsX > -120)
+            obsX-=7;
+        else
+        {
+            obsX = getmaxx();
+            noOfObs = 1 + rand() % 3;
+            int p = rand()%2;
+            type = obsType[p];
+        }
     }
 
 };
 
-void createObs(int x)
-{
-    int n=3;
-    if(obsAnim == "finished")
-    {
-
-        for(int i=0; i<n; i++)
-        {
-            // Specify the coordinates of the triangle
-            int points[] = {x, 440, x+40, 440, x+20, 405, x, 440};
-
-            // Draw a filled triangle
-            fillpoly(4, points);
-
-            x+=40;
-        }
-
-        obsAnim = "running";
-    }
-}
-
-void moveObs()
-{
-
-    int x = getmaxx();
-
-    if(obsAnim == "running")
-    {
-        delay(20);
-        x-=10;
-        createObs(x);
-
-        if((x+40)>=0)
-            obsAnim = "finished";
-    }
-}
 
 int main()
 {
     int gd = DETECT, gm;
     initgraph(&gd,&gm,"C:\\TURBOC3\\BGI");
 
+    obsX = getmaxx();
+    srand(time(0));
+    noOfObs = 1 + rand() % 3;
 
     Player p;
     Ground *g = new Ground();
-    createObs(getmaxx());
+    Obstacle *o = new Obstacle();
+    o->createObs(obsX, noOfObs);
 
     while(!isGameOver)
     {
         Ground *g = new Ground();
         p.jump();
-        moveObs();
+        o->moveObs();
+        o->createObs(obsX, noOfObs);
         delay(1);
         delete g;
         cleardevice();
     }
 
     delete g;
+    delete o;
 
     getch();
     closegraph();
