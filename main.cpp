@@ -68,18 +68,23 @@ public:
 class Obstacle
 {
     string type;
+    double obsSpeed;
+    static int noOfTorpedoes;
 public:
     Obstacle()
     {
-        srand(time(0));
+        srand(time(0)); //randomize sequence
         //randomize obstacle type
         int p = rand()%2;
         type = obsType[p];
+        obsSpeed = 7;
     }
     void createObs(int x, int n)
     {
         if(type == "Spike")
         {
+            noOfTorpedoes = 0;
+            
             for(int j=0; j<n; j++)
             {
                 // Specify the coordinates of the triangle
@@ -98,8 +103,16 @@ public:
         }
         else if(type == "Torpedo")
         {
-            //Torpedo Initialization
-            fillellipse(x,350,20,10);
+            if(noOfTorpedoes <= 2)
+            {
+                //Torpedo Initialization
+                fillellipse(x,350,20,10);
+            }
+            else
+            {
+                type = "Spike";
+                noOfTorpedoes = 0;
+            }
 
             //Collision Detection
             if((x>=playerX && x<=playerX+40) && (350>=playerY && 350 <= playerY+40))
@@ -109,7 +122,11 @@ public:
     void moveObs()
     {
         if(obsX > -120)
-            obsX-=7;
+        {
+            obsX-=obsSpeed;
+            if(obsSpeed <= 11)
+                obsSpeed+=0.001;
+        }
         else
         {
             obsX = getmaxx();
@@ -117,10 +134,12 @@ public:
             int p = rand()%2;
             type = obsType[p];
             score+=10;
+            noOfTorpedoes++;
         }
     }
 
 };
+int Obstacle::noOfTorpedoes = 0;
 
 void scoreDisplay(int score)
 {
